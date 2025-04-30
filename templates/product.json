@@ -57,11 +57,11 @@
           "type": "quantity_selector",
           "settings": {}
         },
-        "pincode_validator_j8kDmg": {
+        "pincode_validator_eCEMKN": {
           "type": "pincode_validator",
           "settings": {
-            "google_sheet_api_key": "YOUR_API_KEY",
-            "google_sheet_id": "YOUR_SHEET_ID",
+            "google_sheet_api_key": "",
+            "google_sheet_id": "",
             "sheet_range": "Sheet1!A1:A100"
           }
         },
@@ -92,7 +92,7 @@
         "price",
         "variant_picker",
         "quantity_selector",
-        "pincode_validator_j8kDmg",
+        "pincode_validator_eCEMKN",
         "buy_buttons",
         "description",
         "share"
