@@ -57,6 +57,14 @@
           "type": "quantity_selector",
           "settings": {}
         },
+        "pincode_validator_L3Lgiq": {
+          "type": "pincode_validator",
+          "settings": {
+            "google_sheet_api_key": "YOUR_API_KEY",
+            "google_sheet_id": "YOUR_SHEET_ID",
+            "sheet_range": "Sheet1!A1:A100"
+          }
+        },
         "buy_buttons": {
           "type": "buy_buttons",
           "settings": {
@@ -84,6 +92,7 @@
         "price",
         "variant_picker",
         "quantity_selector",
+        "pincode_validator_L3Lgiq",
         "buy_buttons",
         "description",
         "share"
