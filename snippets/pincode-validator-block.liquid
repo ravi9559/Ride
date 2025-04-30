@@ -8,7 +8,7 @@
   or sheet_range == blank
 %}
   <div class="product__block" style="color: red; font-weight: bold; max-width: 44rem; margin: 0 auto;">
-    ⚠️ Please enter Google Sheet API Key, and Sheet ID in the theme editor settings for this block.
+    ⚠️ Please enter Google Sheet API Key, and Sheet ID iin the theme editor. This block will not function until then.
   </div>
 {% else %}
   <div class="product__block" {{ block.shopify_attributes }}>
@@ -24,9 +24,7 @@
           placeholder=" "
           required
         >
-        <label class="field__label" for="pincode-input-{{ block.id }}"
-          >Please enter your pincode to check availability</label
-        >
+        <label class="field__label" for="pincode-input-{{ block.id }}">Pincode? Check availability.</label>
         <button
           type="button"
           id="check-pincode-btn-{{ block.id }}"
