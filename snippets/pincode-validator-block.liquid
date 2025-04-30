@@ -1,0 +1,93 @@
+<div class="product__block" {{ block.shopify_attributes }}>
+  <div class="pincode-validator-container" style="max-width: 44rem; ">
+    <div class="field pincode-validator-field" style="position: relative; margin-bottom: 1rem;">
+      <input
+        id="pincode-input-{{ block.id }}"
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9]{6}"
+        maxlength="6"
+        class="field__input"
+        placeholder=" "
+        required
+      >
+      <label class="field__label" for="pincode-input-{{ block.id }}">Enter Pincode</label>
+      <button
+        type="button"
+        id="check-pincode-btn-{{ block.id }}"
+        class="field__button"
+        aria-label="Check"
+        style="right: 0.5rem; top: 0.5rem;"
+      >
+        <svg
+          viewBox="0 0 14 10"
+          fill="none"
+          aria-hidden="true"
+          focusable="false"
+          class="icon icon-arrow"
+          xmlns="http://www.w3.org/2000/svg"
+          style="width: 1.5rem;"
+        >
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M8.537.808a.5.5 0 01.817-.162l4 4a.5.5 0 010 .708l-4 4a.5.5 0 11-.708-.708L11.793 5.5H1a.5.5 0 010-1h10.793L8.646 1.354a.5.5 0 01-.109-.546z" fill="currentColor"></path>
+        </svg>
+      </button>
+    </div>
+    <p id="pincode-result-{{ block.id }}" class="product__text" style="margin: 0;"></p>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const input = document.getElementById("pincode-input-{{ block.id }}");
+  const button = document.getElementById("check-pincode-btn-{{ block.id }}");
+  const result = document.getElementById("pincode-result-{{ block.id }}");
+
+  const addToCartBtn = document.querySelector('form[action*="/cart/add"] [type="submit"]');
+  const buyNowBtn = document.querySelector('form[action*="/cart/add"] [name="checkout"]');
+
+  // Disable buttons on load
+  if (addToCartBtn) addToCartBtn.disabled = true;
+  if (buyNowBtn) buyNowBtn.disabled = true;
+
+  button.addEventListener("click", async () => {
+    const pincode = input.value.trim();
+
+    if (!/^\d{6}$/.test(pincode)) {
+      result.textContent = "Please enter a valid 6-digit pincode.";
+      result.style.color = "red";
+      if (addToCartBtn) addToCartBtn.disabled = true;
+      if (buyNowBtn) buyNowBtn.disabled = true;
+      return;
+    }
+
+    const apiKey = "{{ block.settings.google_sheet_api_key }}";
+    const sheetId = "{{ block.settings.google_sheet_id }}";
+    const range = "{{ block.settings.sheet_range }}";
+
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.values) {
+        const pincodes = data.values.flat().map(String);
+        const isValid = pincodes.includes(pincode);
+
+        result.textContent = isValid ? "Delivery Available ✅" : "Delivery Not Available ❌";
+        result.style.color = isValid ? "green" : "red";
+
+        if (addToCartBtn) addToCartBtn.disabled = !isValid;
+        if (buyNowBtn) buyNowBtn.disabled = !isValid;
+      } else {
+        result.textContent = "No pincode data found.";
+        result.style.color = "red";
+      }
+    } catch (err) {
+      console.error("Pincode validation error:", err);
+      result.textContent = "Error checking pincode.";
+      result.style.color = "red";
+    }
+  });
+});
+</script>
