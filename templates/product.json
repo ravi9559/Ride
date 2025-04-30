@@ -62,7 +62,7 @@
           "settings": {
             "google_sheet_api_key": "AIzaSyANkvWPazQO7rKNjAy5dcJe1roRfxlkrnQ",
             "google_sheet_id": "1QJUNehhVmK3mJADKyd7AuK5PVoa2j6F62WULDfQxHHk",
-            "sheet_range": "Sheet1!A1:A100"
+            "sheet_range": "Sheet1!A1:A157126"
           }
         },
         "buy_buttons": {
