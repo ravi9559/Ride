@@ -1,42 +1,52 @@
-<div class="product__block" {{ block.shopify_attributes }}>
-  <div class="pincode-validator-container" style="max-width: 44rem; ">
-    <div class="field pincode-validator-field" style="position: relative; margin-bottom: 1rem;">
-      <input
-        id="pincode-input-{{ block.id }}"
-        type="text"
-        inputmode="numeric"
-        pattern="[0-9]{6}"
-        maxlength="6"
-        class="field__input"
-        placeholder=" "
-        required
-      >
-      <label class="field__label" for="pincode-input-{{ block.id }}">Please enter your pincode to check availability</label>
-      <button
-        type="button"
-        id="check-pincode-btn-{{ block.id }}"
-        class="field__button"
-        aria-label="Check"
-        style="right: 0.5rem; top: 0.5rem;"
-      >
-        <svg
-          viewBox="0 0 14 10"
-          fill="none"
-          aria-hidden="true"
-          focusable="false"
-          class="icon icon-arrow"
-          xmlns="http://www.w3.org/2000/svg"
-          style="width: 1.5rem;"
-        >
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M8.537.808a.5.5 0 01.817-.162l4 4a.5.5 0 010 .708l-4 4a.5.5 0 11-.708-.708L11.793 5.5H1a.5.5 0 010-1h10.793L8.646 1.354a.5.5 0 01-.109-.546z" fill="currentColor"></path>
-        </svg>
-      </button>
-    </div>
-    <p id="pincode-result-{{ block.id }}" class="product__text" style="margin: 0;"></p>
+{% if block.settings.google_sheet_api_key == blank
+  or block.settings.google_sheet_id == blank
+  or block.settings.sheet_range == blank
+%}
+  <div class="product__block" style="color: red; font-weight: bold; max-width: 44rem; margin: 0 auto;">
+    ⚠️ Please enter Google Sheet API Key, Sheet ID, and Range in the theme editor settings for this block.
   </div>
-</div>
+{% else %}
+  <div class="product__block" {{ block.shopify_attributes }}>
+    <div class="pincode-validator-container" style="max-width: 44rem; ">
+      <div class="field pincode-validator-field" style="position: relative; margin-bottom: 1rem;">
+        <input
+          id="pincode-input-{{ block.id }}"
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]{6}"
+          maxlength="6"
+          class="field__input"
+          placeholder=" "
+          required
+        >
+        <label class="field__label" for="pincode-input-{{ block.id }}"
+          >Please enter your pincode to check availability</label
+        >
+        <button
+          type="button"
+          id="check-pincode-btn-{{ block.id }}"
+          class="field__button"
+          aria-label="Check"
+          style="right: 0.5rem; top: 0.5rem;"
+        >
+          <svg
+            viewBox="0 0 14 10"
+            fill="none"
+            aria-hidden="true"
+            focusable="false"
+            class="icon icon-arrow"
+            xmlns="http://www.w3.org/2000/svg"
+            style="width: 1.5rem;"
+          >
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M8.537.808a.5.5 0 01.817-.162l4 4a.5.5 0 010 .708l-4 4a.5.5 0 11-.708-.708L11.793 5.5H1a.5.5 0 010-1h10.793L8.646 1.354a.5.5 0 01-.109-.546z" fill="currentColor"></path>
+          </svg>
+        </button>
+      </div>
+      <p id="pincode-result-{{ block.id }}" class="product__text" style="margin: 0;"></p>
+    </div>
+  </div>
 
-<script>
+  <script>
 document.addEventListener("DOMContentLoaded", function () {
   const input = document.getElementById("pincode-input-{{ block.id }}");
   const button = document.getElementById("check-pincode-btn-{{ block.id }}");
@@ -90,4 +100,5 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
-</script>
+  </script>
+{% endif %}
