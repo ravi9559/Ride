@@ -1,6 +1,11 @@
-{% if block.settings.google_sheet_api_key == blank
-  or block.settings.google_sheet_id == blank
-  or block.settings.sheet_range == blank
+{% assign api_key = block.settings.google_sheet_api_key | strip %}
+{% assign sheet_id = block.settings.google_sheet_id | strip %}
+{% assign sheet_range = block.settings.sheet_range | strip %}
+{% if api_key == blank
+  or api_key == 'YOUR_API_KEY'
+  or sheet_id == blank
+  or sheet_id == 'YOUR_SHEET_ID'
+  or sheet_range == blank
 %}
   <div class="product__block" style="color: red; font-weight: bold; max-width: 44rem; margin: 0 auto;">
     ⚠️ Please enter Google Sheet API Key, Sheet ID, and Range in the theme editor settings for this block.
