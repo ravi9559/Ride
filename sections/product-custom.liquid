@@ -1,6 +1,62 @@
-{% schema %}
-  {
-    "name": "Section name",
-    "settings": []
-  }
-{% endschema %}
+{% comment %}
+Custom Product Page Section
+Supports: Media Gallery, Dynamic Purchase Options, Flavor Swatches, Dynamic Pricing, Metafield-driven Content
+{% endcomment %}
+
+<section id="custom-product">
+  <div class="product-gallery">
+    {% render 'media-gallery', product: product %}
+  </div>
+
+  <div class="purchase-options">
+    <h3>Choose Your Option</h3>
+    <label><input type="radio" name="purchase_mode" value="single" checked> Single Drink Subscription</label>
+    <label><input type="radio" name="purchase_mode" value="double"> Double Drink Subscription</label>
+    <label><input type="radio" name="purchase_mode" value="try"> Try Once</label>
+  </div>
+
+  <div class="flavor-selectors">
+    <h4>Select Flavor(s)</h4>
+    <div class="flavor-row single" data-mode="single">
+      <img src="{{ 'brown.png' | asset_url }}" data-flavor="Chocolate" class="flavor-swatch">
+      <img src="{{ 'white.png' | asset_url }}" data-flavor="Vanilla" class="flavor-swatch">
+      <img src="{{ 'gray.png' | asset_url }}" data-flavor="Orange" class="flavor-swatch">
+    </div>
+    <div class="flavor-row double" data-mode="double" style="display:none">
+      <p>Flavor 1:</p>
+      <!-- Repeat swatches -->
+      <p>Flavor 2:</p>
+      <!-- Repeat swatches -->
+    </div>
+  </div>
+
+  <div class="dynamic-pricing">
+    <p>Original Price: <span id="original-price"></span></p>
+    <p>Final Price: <strong id="final-price"></strong></p>
+  </div>
+
+  <div class="whats-included">
+    <h4>What's Included</h4>
+    <div id="included-content">
+      {{ product.metafields.custom.single_mode_info }}
+    </div>
+  </div>
+
+  <button id="add-to-cart" data-default-variant="{{ product.variants.first.id }}">
+    Add to Cart
+  </button>
+
+  <div class="faqs">
+    <h4>FAQs</h4>
+    <details>
+      <summary>{{ product.metafields.custom.faq_1_question }}</summary>
+      <p>{{ product.metafields.custom.faq_1_answer }}</p>
+    </details>
+    <details>
+      <summary>{{ product.metafields.custom.faq_2_question }}</summary>
+      <p>{{ product.metafields.custom.faq_2_answer }}</p>
+    </details>
+  </div>
+</section>
+
+<script src="{{ 'custom-product.js' | asset_url }}" defer></script>
