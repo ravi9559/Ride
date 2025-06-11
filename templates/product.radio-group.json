@@ -19,12 +19,12 @@
             "text_style": "uppercase"
           }
         },
-        "description": {
-          "type": "description",
-          "settings": {}
-        },
         "title": {
           "type": "title",
+          "settings": {}
+        },
+        "description": {
+          "type": "description",
           "settings": {}
         },
         "product-rating": {
@@ -77,8 +77,8 @@
       },
       "block_order": [
         "vendor",
-        "description",
         "title",
+        "description",
         "product-rating",
         "text_bMHnfH",
         "inventory_Aa7yTn",
