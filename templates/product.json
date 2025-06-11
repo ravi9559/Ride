@@ -130,10 +130,15 @@
         "padding_top": 0,
         "padding_bottom": 40
       }
+    },
+    "custom-product": {
+      "type": "product-custom",
+      "settings": {}
     }
   },
   "order": [
     "main",
+    "custom-product",
     "related-products"
   ]
 }
