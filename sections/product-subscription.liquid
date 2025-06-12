@@ -1,176 +1,96 @@
 {% schema %}
 {
-  "name": "Subscription Options",
-  "settings": [],
-  "presets": [
-    {
-      "name": "Subscription Options"
-    }
-  ]
+  "name": "Plan Selector",
+  "blocks": [],
+  "tag": "section",
+  "class": "product-plan-selector",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": []
 }
 {% endschema %}
 
+<div id="subscription-block" class="subscription-block">
+  <style>
+    .hide-qty .product-form__quantity { display: none !important; }
+    .plan-options, .flavor-select-block { display: none; margin-top: 1rem; }
+    .flavor-options label { display: inline-block; margin: 0 10px; text-align: center; }
+    .flavor-options img { max-width: 60px; display: block; margin: 0 auto 5px; }
+  </style>
 
-<div id="subscription-options" class="subscription-box">
-  <h3>Select Your Plan</h3>
-  <div class="radio-group">
-  <label>
-    <input type="radio" name="plan_type" value="single" checked>
-    Single Subscription – ₹10
-  </label>
-  <label>
-    <input type="radio" name="plan_type" value="double">
-    Double Subscription – ₹20
-  </label>
-  <label>
-    <input type="radio" name="plan_type" value="try">
-    Try Once – ₹5
-  </label>
-</div>
-
-
-  <div id="flavor-section"></div>
-  <div id="includes-section"></div>
-</div>
-
-<script>
-  const flavorData = {
-    chocolate: {
-      label: "Chocolate",
-      image: "{{ product.metafields.flavors.chocolate_image | image_url }}"
-    },
-    vanilla: {
-      label: "Vanilla",
-      image: "{{ product.metafields.flavors.vanilla_image | image_url }}"
-    },
-    orange: {
-      label: "Orange",
-      image: "{{ product.metafields.flavors.orange_image | image_url }}"
-    }
-  };
-
-  const bulletPoints = {
-    single: `{{ product.metafields.custom.single_drink_subscription | escape | newline_to_br }}`,
-    double: `{{ product.metafields.custom.double_drink_subscription | escape | newline_to_br }}`,
-    try: `{{ product.metafields.custom.try_once | escape | newline_to_br }}`
-  };
-
-  const renderBullets = (planType) => {
-    if (!bulletPoints[planType]) return "";
-    const bulletHTML = bulletPoints[planType].split('<br />').map(line => `<li>${line}</li>`).join('');
-    return `<ul>${bulletHTML}</ul>`;
-  };
-
-  const flavorOptionsHTML = (nameAttr) => `
-    <div class="flavor-options">
-      ${Object.entries(flavorData).map(([key, data]) => `
+  <div>
+    <h3>Select Your Plan</h3>
+    {% assign plans = product.selling_plan_groups %}
+    <div class="radio-group">
+      {% for plan_group in plans %}
+        {% assign plan_handle = plan_group.name | handleize %}
         <label>
-          <input type="radio" name="${nameAttr}" value="${key}">
-          <img src="${data.image}" alt="${data.label}" width="80">
-          <div>${data.label}</div>
+          <input
+            type="radio"
+            name="plan_type"
+            value="{{ plan_handle }}"
+            data-plan-id="{{ plan_group.selling_plans[0].id }}"
+            {% if forloop.first %}checked{% endif %}
+          >
+          {{ plan_group.name }} – ₹{{ plan_group.selling_plans[0].price_adjustments[0].value | divided_by: 100 }}
         </label>
-      `).join('')}
+      {% endfor %}
     </div>
-  `;
+  </div>
 
-  const whatIncludedHTML = (selected, type) => {
-    const selectedFlavor = flavorData[selected];
-    const selectedImg = selectedFlavor?.image || '';
-    const selectedName = selectedFlavor?.label || '';
-    const allFlavors = Object.entries(flavorData).map(([_, data]) =>
-      `<img src="${data.image}" alt="${data.label}" width="60">`
-    ).join(' ');
+  {% comment %} Flavor images (can be metafields or static assets) {% endcomment %}
+  {% assign flavors = "Chocolate,Vanilla,Orange" | split: "," %}
+  {% assign flavor_images = "chocolate.png,vanilla.png,orange.png" | split: "," %}
 
-    if (type === "single") {
-      return `
-        <h4>What’s Included</h4>
-        <ul>
-          <li><strong>${selectedName}</strong> every 30 days</li>
-          <li>${allFlavors} — one-time free sampler</li>
-        </ul>
-        ${renderBullets("single")}
-      `;
-    }
+  <div id="flavor-section" class="flavor-select-block">
+    <h4>Select a Flavor</h4>
+    <div class="flavor-options">
+      {% for flavor in flavors %}
+        {% assign image = flavor_images[forloop.index0] %}
+        <label>
+          <input type="radio" name="selected_flavor" value="{{ flavor }}">
+          <img src="{{ image | asset_url }}" alt="{{ flavor }}">
+          <div>{{ flavor }}</div>
+        </label>
+      {% endfor %}
+    </div>
+  </div>
 
-    if (type === "double") {
-      return `
-        <h4>What’s Included</h4>
-        <ul>
-          <li>Selected flavors delivered every 30 days</li>
-          <li>${allFlavors} — one-time free sampler</li>
-        </ul>
-        ${renderBullets("double")}
-      `;
-    }
+  <input type="hidden" id="selling-plan-input" name="selling_plan">
 
-    return `<h4>What’s Included</h4>${renderBullets("try")}`;
-  };
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form[action^="/cart"]');
+      const body = document.body;
 
-  const flavorSection = document.getElementById("flavor-section");
-  const includesSection = document.getElementById("includes-section");
+      // Hide quantity selector
+      if (form) body.classList.add('hide-qty');
 
-  const renderSingle = () => {
-    flavorSection.innerHTML = `
-      <h4>Select a Flavor</h4>
-      ${flavorOptionsHTML("flavor_single")}
-    `;
-    includesSection.innerHTML = "";
-    document.querySelectorAll('input[name="flavor_single"]').forEach(input => {
-      input.addEventListener('change', (e) => {
-        includesSection.innerHTML = whatIncludedHTML(e.target.value, "single");
+      const planRadios = document.querySelectorAll('input[name="plan_type"]');
+      const flavorBlock = document.getElementById('flavor-section');
+      const sellingPlanInput = document.getElementById('selling-plan-input');
+
+      function showSelectedFlavor(planId) {
+        sellingPlanInput.value = planId;
+        flavorBlock.style.display = 'block';
+
+        // Move flavor block under selected radio
+        const selectedLabel = document.querySelector('input[name="plan_type"]:checked').parentNode;
+        selectedLabel.insertAdjacentElement('afterend', flavorBlock);
+      }
+
+      planRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+          showSelectedFlavor(this.dataset.planId);
+        });
+
+        // Initial set
+        if (radio.checked) {
+          showSelectedFlavor(radio.dataset.planId);
+        }
       });
     });
-  };
-
-  const renderDouble = () => {
-    flavorSection.innerHTML = `
-      <h4>Select Flavor 1</h4>${flavorOptionsHTML("flavor1")}
-      <h4>Select Flavor 2</h4>${flavorOptionsHTML("flavor2")}
-    `;
-    includesSection.innerHTML = whatIncludedHTML(null, "double");
-  };
-
-  const renderTryOnce = () => {
-    flavorSection.innerHTML = `
-      <label><input type="radio" name="try_type" value="try_single" checked> Single</label>
-      <label><input type="radio" name="try_type" value="try_double"> Double</label>
-      <div id="try-flavors"></div>
-    `;
-
-    const tryFlavors = document.getElementById("try-flavors");
-
-    const renderTrySingle = () => {
-      tryFlavors.innerHTML = flavorOptionsHTML("try_flavor_single") + whatIncludedHTML(null, "try");
-    };
-
-    const renderTryDouble = () => {
-      tryFlavors.innerHTML = `
-        <h4>Flavor 1</h4>${flavorOptionsHTML("try_flavor1")}
-        <h4>Flavor 2</h4>${flavorOptionsHTML("try_flavor2")}
-        ${whatIncludedHTML(null, "try")}
-      `;
-    };
-
-    document.querySelectorAll('input[name="try_type"]').forEach(input => {
-      input.addEventListener('change', (e) => {
-        if (e.target.value === "try_single") renderTrySingle();
-        else renderTryDouble();
-      });
-    });
-
-    renderTrySingle(); // default view
-  };
-
-  // Plan radio switch
-  document.querySelectorAll('input[name="plan_type"]').forEach(input => {
-    input.addEventListener('change', (e) => {
-      includesSection.innerHTML = "";
-      if (e.target.value === "single") renderSingle();
-      else if (e.target.value === "double") renderDouble();
-      else renderTryOnce();
-    });
-  });
-
-  // Initial render
-  renderSingle();
-</script>
+  </script>
+</div>
