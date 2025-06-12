@@ -73,6 +73,12 @@
           "settings": {
             "share_label": "Share"
           }
+        },
+        "custom_liquid_ktXktD": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{% render 'product-plan-selector' %}"
+          }
         }
       },
       "block_order": [
@@ -86,7 +92,8 @@
         "variant_picker",
         "quantity_selector",
         "buy_buttons",
-        "share"
+        "share",
+        "custom_liquid_ktXktD"
       ],
       "settings": {
         "enable_sticky_info": true,
