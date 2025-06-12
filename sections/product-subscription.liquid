@@ -1,96 +1,197 @@
 {% schema %}
 {
-  "name": "Plan Selector",
-  "blocks": [],
-  "tag": "section",
-  "class": "product-plan-selector",
-  "limit": 1,
-  "enabled_on": {
-    "templates": ["product"]
-  },
-  "settings": []
+  "name": "Subscription Block",
+  "blocks": [
+    {
+      "type": "subscription_option",
+      "name": "Plan Option",
+      "settings": [
+        {
+          "type": "text",
+          "id": "plan_label",
+          "label": "Plan Label (e.g., Single Subscription)"
+        },
+        {
+          "type": "text",
+          "id": "plan_price",
+          "label": "Plan Price (e.g., ₹10)"
+        },
+        {
+          "type": "text",
+          "id": "plan_key",
+          "label": "Plan Key (e.g., single, double, try)"
+        },
+        {
+          "type": "text",
+          "id": "selling_plan_id",
+          "label": "Selling Plan ID"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Subscription Block",
+      "blocks": [
+        {
+          "type": "subscription_option",
+          "settings": {
+            "plan_label": "Single Subscription",
+            "plan_price": "₹10",
+            "plan_key": "single",
+            "selling_plan_id": "123456789"
+          }
+        },
+        {
+          "type": "subscription_option",
+          "settings": {
+            "plan_label": "Double Subscription",
+            "plan_price": "₹20",
+            "plan_key": "double",
+            "selling_plan_id": "234567890"
+          }
+        },
+        {
+          "type": "subscription_option",
+          "settings": {
+            "plan_label": "Try Once",
+            "plan_price": "₹5",
+            "plan_key": "try",
+            "selling_plan_id": "345678901"
+          }
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}
 
-<div id="subscription-block" class="subscription-block">
-  <style>
-    .hide-qty .product-form__quantity { display: none !important; }
-    .plan-options, .flavor-select-block { display: none; margin-top: 1rem; }
-    .flavor-options label { display: inline-block; margin: 0 10px; text-align: center; }
-    .flavor-options img { max-width: 60px; display: block; margin: 0 auto 5px; }
-  </style>
-
-  <div>
-    <h3>Select Your Plan</h3>
-    {% assign plans = product.selling_plan_groups %}
-    <div class="radio-group">
-      {% for plan_group in plans %}
-        {% assign plan_handle = plan_group.name | handleize %}
-        <label>
-          <input
-            type="radio"
-            name="plan_type"
-            value="{{ plan_handle }}"
-            data-plan-id="{{ plan_group.selling_plans[0].id }}"
-            {% if forloop.first %}checked{% endif %}
-          >
-          {{ plan_group.name }} – ₹{{ plan_group.selling_plans[0].price_adjustments[0].value | divided_by: 100 }}
-        </label>
-      {% endfor %}
-    </div>
+<div id="subscription-block">
+  <h3>Select Your Plan</h3>
+  <div class="radio-group">
+    {% for block in section.blocks %}
+      <label>
+        <input type="radio" name="plan_type" value="{{ block.settings.plan_key }}" data-plan-id="{{ block.settings.selling_plan_id }}">
+        {{ block.settings.plan_label }} – {{ block.settings.plan_price }}
+      </label>
+    {% endfor %}
   </div>
 
-  {% comment %} Flavor images (can be metafields or static assets) {% endcomment %}
-  {% assign flavors = "Chocolate,Vanilla,Orange" | split: "," %}
-  {% assign flavor_images = "chocolate.png,vanilla.png,orange.png" | split: "," %}
+  <div id="flavor-section"></div>
+  <div id="includes-section"></div>
+  <input type="hidden" id="selected-selling-plan" name="selling_plan" value="">
+</div>
 
-  <div id="flavor-section" class="flavor-select-block">
-    <h4>Select a Flavor</h4>
+<script>
+  const flavorData = {
+    chocolate: {
+      label: "Chocolate",
+      image: "{{ product.metafields.flavors.chocolate_image | image_url }}"
+    },
+    vanilla: {
+      label: "Vanilla",
+      image: "{{ product.metafields.flavors.vanilla_image | image_url }}"
+    },
+    orange: {
+      label: "Orange",
+      image: "{{ product.metafields.flavors.orange_image | image_url }}"
+    }
+  };
+
+  const renderFlavorOptions = (nameAttr) => `
     <div class="flavor-options">
-      {% for flavor in flavors %}
-        {% assign image = flavor_images[forloop.index0] %}
+      ${Object.entries(flavorData).map(([key, data]) => `
         <label>
-          <input type="radio" name="selected_flavor" value="{{ flavor }}">
-          <img src="{{ image | asset_url }}" alt="{{ flavor }}">
-          <div>{{ flavor }}</div>
+          <input type="radio" name="${nameAttr}" value="${key}">
+          <img src="${data.image}" alt="${data.label}" width="80">
+          <div>${data.label}</div>
         </label>
-      {% endfor %}
+      `).join('')}
     </div>
-  </div>
+  `;
 
-  <input type="hidden" id="selling-plan-input" name="selling_plan">
+  const renderIncludes = (planType) => {
+    const bullets = {
+      single: `{{ product.metafields.includes.single_plan_bullets | escape | newline_to_br }}`,
+      double: `{{ product.metafields.includes.double_plan_bullets | escape | newline_to_br }}`,
+      try: `{{ product.metafields.includes.try_once_bullets | escape | newline_to_br }}`
+    };
+    if (!bullets[planType]) return '';
+    return `<h4>What’s Included</h4><ul>${bullets[planType].split('<br />').map(item => `<li>${item}</li>`).join('')}</ul>`;
+  };
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const form = document.querySelector('form[action^="/cart"]');
-      const body = document.body;
+  const flavorSection = document.getElementById("flavor-section");
+  const includesSection = document.getElementById("includes-section");
+  const sellingPlanInput = document.getElementById("selected-selling-plan");
 
-      // Hide quantity selector
-      if (form) body.classList.add('hide-qty');
+  document.querySelectorAll('input[name="plan_type"]').forEach(input => {
+    input.addEventListener('change', (e) => {
+      const planKey = e.target.value;
+      const sellingPlanId = e.target.dataset.planId;
 
-      const planRadios = document.querySelectorAll('input[name="plan_type"]');
-      const flavorBlock = document.getElementById('flavor-section');
-      const sellingPlanInput = document.getElementById('selling-plan-input');
+      sellingPlanInput.value = sellingPlanId;
 
-      function showSelectedFlavor(planId) {
-        sellingPlanInput.value = planId;
-        flavorBlock.style.display = 'block';
+      if (planKey === 'single') {
+        flavorSection.innerHTML = renderFlavorOptions("flavor_single");
+      } else if (planKey === 'double') {
+        flavorSection.innerHTML = `
+          <h4>Flavor 1</h4>${renderFlavorOptions("flavor1")}
+          <h4>Flavor 2</h4>${renderFlavorOptions("flavor2")}
+        `;
+      } else if (planKey === 'try') {
+        flavorSection.innerHTML = `
+          <label><input type="radio" name="try_type" value="try_single" checked> Single</label>
+          <label><input type="radio" name="try_type" value="try_double"> Double</label>
+          <div id="try-flavors"></div>
+        `;
 
-        // Move flavor block under selected radio
-        const selectedLabel = document.querySelector('input[name="plan_type"]:checked').parentNode;
-        selectedLabel.insertAdjacentElement('afterend', flavorBlock);
-      }
+        const tryFlavors = document.getElementById("try-flavors");
+        const renderTrySingle = () => {
+          tryFlavors.innerHTML = renderFlavorOptions("try_flavor_single");
+        };
+        const renderTryDouble = () => {
+          tryFlavors.innerHTML = `
+            <h4>Flavor 1</h4>${renderFlavorOptions("try_flavor1")}
+            <h4>Flavor 2</h4>${renderFlavorOptions("try_flavor2")}`;
+        };
 
-      planRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-          showSelectedFlavor(this.dataset.planId);
+        document.querySelectorAll('input[name="try_type"]').forEach(radio => {
+          radio.addEventListener('change', (e) => {
+            if (e.target.value === 'try_single') renderTrySingle();
+            else renderTryDouble();
+          });
         });
 
-        // Initial set
-        if (radio.checked) {
-          showSelectedFlavor(radio.dataset.planId);
-        }
-      });
+        renderTrySingle();
+      }
+
+      includesSection.innerHTML = renderIncludes(planKey);
+
+      // Hide quantity input if exists
+      const qty = document.querySelector('.product-form__quantity');
+      if (qty) qty.style.display = 'none';
     });
-  </script>
-</div>
+  });
+
+  // Trigger default
+  document.querySelector('input[name="plan_type"]:checked').dispatchEvent(new Event('change'));
+</script>
+
+<style>
+  .radio-group label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  .flavor-options {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+  }
+  .flavor-options label {
+    text-align: center;
+  }
+  .flavor-options img {
+    border-radius: 6px;
+    width: 80px;
+  }
+</style>
