@@ -131,14 +131,14 @@
         "padding_bottom": 40
       }
     },
-    "custom-product": {
-      "type": "product-custom",
+    "product-subscription": {
+      "type": "product-subscription",
       "settings": {}
     }
   },
   "order": [
     "main",
-    "custom-product",
+    "product-subscription",
     "related-products"
   ]
 }
