@@ -104,11 +104,6 @@
         "padding_bottom": 12
       }
     },
-    "custom-product": {
-      "type": "product-custom",
-      "disabled": true,
-      "settings": {}
-    },
     "related-products": {
       "type": "related-products",
       "disabled": true,
@@ -130,13 +125,11 @@
     },
     "product_subscription_4pp8X9": {
       "type": "product-subscription",
-      "name": "Subscription Options",
       "settings": {}
     }
   },
   "order": [
     "main",
-    "custom-product",
     "related-products",
     "product_subscription_4pp8X9"
   ]
