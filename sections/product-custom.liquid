@@ -3,6 +3,17 @@ Custom Product Page Section
 Supports: Media Gallery, Dynamic Purchase Options, Flavor Swatches, Dynamic Pricing, Metafield-driven Content
 {% endcomment %}
 
+{% schema %}
+{
+  "name": "Custom Product",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Custom Product"
+    }
+  ]
+}
+{% endschema %}
 <section id="custom-product">
   <div class="product-gallery">
     {% render 'product-media-gallery', product: product %}
