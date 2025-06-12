@@ -106,7 +106,6 @@
     },
     "custom-product": {
       "type": "product-custom",
-      "disabled": true,
       "settings": {}
     },
     "related-products": {
