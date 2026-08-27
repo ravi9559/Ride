@@ -11,7 +11,13 @@
   "sections": {
     "main": {
       "type": "byob",
-      "settings": {}
+      "settings": {
+        "collection": "byob-eligible",
+        "heading": "Build Your Own Box",
+        "description": "<p>Choose your favourite products.</p>",
+        "summary_heading": "Your Box",
+        "button_text": "Add Box to Cart"
+      }
     }
   },
   "order": [
